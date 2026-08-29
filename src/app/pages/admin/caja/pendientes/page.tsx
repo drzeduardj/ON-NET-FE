@@ -5,6 +5,7 @@ import Link from "next/link";
 import AdminLayout from "@/app/components/adminLayout";
 import Pagination from "@/app/components/pagination";
 import SearchDropdown from "@/app/components/searchBar";
+import { esMesConDeuda } from "@/app/lib/estadoMensual";
 
 const apiHost = process.env.NEXT_PUBLIC_API_HOST as string;
 
@@ -80,8 +81,9 @@ const obtenerMesesAdeudados = (
   const meses: number[] = [];
   for (let m = primerMes; m <= ultimoMes; m++) {
     const estado = cliente.estados?.find(e => e.mes === m && e.anio === anioActual)?.estado;
-    if (estado !== "Pagado") {
-      // cuenta "Pendiente", "Pagado Parcial" o "Sin estado"
+    // Cuenta "Pendiente", "Pagado Parcial" y "Sin estado". Quedan fuera
+    // "Suspendido" y "Sin servicio": en esos meses no hay nada que cobrar.
+    if (esMesConDeuda(estado)) {
       meses.push(m);
     }
   }

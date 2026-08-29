@@ -5,6 +5,7 @@ import Link from "next/link";
 import Pagination from "@/app/components/pagination";
 import SearchDropdown from "@/app/components/searchBar";
 import CajeroLayout from "@/app/components/cajeroLayout";
+import { esMesConDeuda } from "@/app/lib/estadoMensual";
 
 const apiHost = process.env.NEXT_PUBLIC_API_HOST as string;
 
@@ -74,7 +75,8 @@ const obtenerMesesAdeudados = (
     const meses: number[] = [];
     for (let m = primerMes; m <= ultimoMes; m++) {
         const estado = cliente.estados?.find(e => e.mes === m && e.anio === anioActual)?.estado;
-        if (estado !== "Pagado") {
+        // Quedan fuera "Suspendido" y "Sin servicio": nada que cobrar ahí.
+        if (esMesConDeuda(estado)) {
             meses.push(m);
         }
     }

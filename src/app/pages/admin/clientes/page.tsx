@@ -7,6 +7,12 @@ import ClienteModal from "./components/clienteModal";
 import Pagination from "@/app/components/pagination";
 import SearchDropdown from "@/app/components/searchBar";
 import Swal from "sweetalert2";
+import {
+  getEstadoColor,
+  etiquetaEstado,
+  abreviaturaEstado,
+  LEYENDA_ESTADOS,
+} from "@/app/lib/estadoMensual";
 
 const apiHost = process.env.NEXT_PUBLIC_API_HOST as string;
 
@@ -550,13 +556,6 @@ const GestionClientes = () => {
   const clampYear = (y: number, minY: number, maxY: number): number =>
     Math.max(minY, Math.min(maxY, y));
 
-  const getEstadoColor = (estado?: string) => {
-    if (estado === "Pagado") return "bg-green-100 text-green-700";
-    if (estado === "Pagado Parcial") return "bg-yellow-100 text-yellow-700";
-    if (estado === "Pendiente") return "bg-red-100 text-red-700";
-    return "bg-slate-100 text-slate-600";
-  };
-
   const isLoadingYear = (clienteId: number, anio: number): boolean =>
     !!loadingEstados[`${clienteId}-${anio}`];
 
@@ -708,6 +707,25 @@ const GestionClientes = () => {
             </div>
           ) : (
             <>
+              {/* Leyenda de los estados del calendario de pagos */}
+              <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-slate-200 bg-white px-4 py-3">
+                <span className="text-xs font-semibold text-slate-500">
+                  Estados:
+                </span>
+                {LEYENDA_ESTADOS.map((estado) => (
+                  <span key={estado} className="flex items-center gap-1.5">
+                    <span
+                      className={`flex h-5 w-5 items-center justify-center rounded text-[11px] font-semibold ${getEstadoColor(
+                        estado
+                      )}`}
+                    >
+                      {abreviaturaEstado(estado)}
+                    </span>
+                    <span className="text-xs text-slate-600">{estado}</span>
+                  </span>
+                ))}
+              </div>
+
               {/* Vista móvil */}
               <div className="grid gap-4 md:hidden">
                 {currentClients.map((cliente) => {
@@ -830,11 +848,11 @@ const GestionClientes = () => {
                                 <div
                                   key={index}
                                   className={`p-2 rounded text-center ${color}`}
-                                  title={estado?.estado || "Sin estado"}
+                                  title={etiquetaEstado(estado?.estado)}
                                 >
                                   <div className="text-xs font-semibold">{mes}</div>
                                   <div className="text-[10px] mt-1">
-                                    {estado?.estado?.charAt(0) || "-"}
+                                    {abreviaturaEstado(estado?.estado)}
                                   </div>
                                 </div>
                               );
@@ -982,7 +1000,7 @@ const GestionClientes = () => {
                                         <div
                                           key={index}
                                           className={`p-1 rounded text-center text-xs ${color}`}
-                                          title={`${mesLargo[index]}: ${estado?.estado || "Sin estado"}`}
+                                          title={`${mesLargo[index]}: ${etiquetaEstado(estado?.estado)}`}
                                         >
                                           {mes}
                                         </div>

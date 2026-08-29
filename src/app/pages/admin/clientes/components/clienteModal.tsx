@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { getEstadoTextColor } from "@/app/lib/estadoMensual";
 
 interface Estado {
   mes: number;
@@ -473,17 +474,7 @@ const ClienteModal = ({ cliente, onClose, onClienteUpdated, apiHost }: ClienteMo
                     <span className="text-slate-600">
                       {MESES[e.mes - 1]} / {e.anio}
                     </span>
-                    <span
-                      className={
-                        e.estado === "Pagado"
-                          ? "text-green-600 font-semibold"
-                          : e.estado === "Pagado Parcial"
-                          ? "text-yellow-600 font-semibold"
-                          : e.estado === "Suspendido"
-                          ? "text-gray-800 font-semibold"
-                          : "text-red-600 font-semibold"
-                      }
-                    >
+                    <span className={getEstadoTextColor(e.estado)}>
                       {e.estado}
                     </span>
                   </li>

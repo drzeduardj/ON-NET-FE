@@ -4,6 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import SearchDropdown from "@/app/components/searchBar";
 import CajeroLayout from "@/app/components/cajeroLayout";
+import {
+    esMesConDeuda,
+    getEstadoColor,
+    etiquetaEstado,
+} from "@/app/lib/estadoMensual";
 
 const apiHost = process.env.NEXT_PUBLIC_API_HOST as string;
 
@@ -142,8 +147,9 @@ const obtenerMesesAdeudados = (
         const estado = cliente.estados?.find(
             (e) => e.mes === m && e.anio === anio
         )?.estado;
-        if (estado !== "Pagado") {
-            // cuenta "Pendiente", "Pagado Parcial" o "Sin estado"
+        // Cuenta "Pendiente", "Pagado Parcial" y "Sin estado". Quedan fuera
+        // "Suspendido" y "Sin servicio": en esos meses no hay nada que cobrar.
+        if (esMesConDeuda(estado)) {
             meses.push(m);
         }
     }
@@ -640,29 +646,17 @@ const GestionClientes = () => {
                                             const estado = clienteSeleccionado.estados?.find(
                                                 (e) => e.mes === index + 1 && e.anio === anioVista
                                             );
-                                            let bgColor = "bg-slate-100";
-                                            let textColor = "text-slate-600";
-
-                                            if (estado?.estado === "Pagado") {
-                                                bgColor = "bg-green-100";
-                                                textColor = "text-green-700";
-                                            } else if (estado?.estado === "Pagado Parcial") {
-                                                bgColor = "bg-yellow-100";
-                                                textColor = "text-yellow-700";
-                                            } else if (estado?.estado === "Pendiente") {
-                                                bgColor = "bg-red-100";
-                                                textColor = "text-red-700";
-                                            }
-
                                             return (
                                                 <div
                                                     key={index}
-                                                    className={`p-3 rounded-lg text-center ${bgColor} ${textColor}`}
-                                                    title={estado?.estado || "Sin estado"}
+                                                    className={`p-3 rounded-lg text-center ${getEstadoColor(
+                                                        estado?.estado
+                                                    )}`}
+                                                    title={etiquetaEstado(estado?.estado)}
                                                 >
                                                     <div className="text-xs font-semibold">{mes}</div>
                                                     <div className="text-[11px] mt-1">
-                                                        {estado?.estado || "Sin estado"}
+                                                        {etiquetaEstado(estado?.estado)}
                                                     </div>
                                                 </div>
                                             );
