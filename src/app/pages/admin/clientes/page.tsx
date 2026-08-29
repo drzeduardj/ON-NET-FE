@@ -288,17 +288,26 @@ const GestionClientes = () => {
     clienteId: number,
     anio: number
   ): Promise<EstadoMensual[]> => {
+    // Sólo se inicializan los meses cuando el backend confirma que no hay
+    // ninguno. Si la petición falla no se toca nada: dar por hecho que el año
+    // está vacío y mandar 12 POST de "Pendiente" es lo que borraba meses ya
+    // pagados.
     try {
       const response = await fetch(
         `${apiHost}/api/estado-mensual/cliente/${clienteId}/anio/${anio}`
       );
-      if (response.ok) {
-        const raw = (await response.json()) as unknown;
-        const estados = normalizarEstados(raw);
-        if (estados.length > 0) return estados;
+      if (!response.ok) {
+        console.error(
+          `Error al obtener estados (HTTP ${response.status}); no se inicializan meses.`
+        );
+        return [];
       }
+      const raw = (await response.json()) as unknown;
+      const estados = normalizarEstados(raw);
+      if (estados.length > 0) return estados;
     } catch (e) {
-      console.error("Error al obtener estados:", e);
+      console.error("Error al obtener estados; no se inicializan meses:", e);
+      return [];
     }
 
     // ✅ Recomendado: NO crear históricos automáticamente

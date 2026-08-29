@@ -188,16 +188,25 @@ const GestionClientes = () => {
         clienteId: number,
         anio: number
     ): Promise<EstadoMensual[]> => {
+        // Sólo se inicializan los meses cuando el backend confirma que no hay
+        // ninguno. Si la petición falla no se toca nada: dar por hecho que el
+        // año está vacío y mandar 12 POST de "Pendiente" es lo que borraba
+        // meses ya pagados.
         try {
             const response = await fetch(
                 `${apiHost}/api/estado-mensual/cliente/${clienteId}/anio/${anio}`
             );
-            if (response.ok) {
-                const estados = await response.json();
-                if (Array.isArray(estados) && estados.length > 0) return estados;
+            if (!response.ok) {
+                console.error(
+                    `Error al obtener estados (HTTP ${response.status}); no se inicializan meses.`
+                );
+                return [];
             }
+            const estados = await response.json();
+            if (Array.isArray(estados) && estados.length > 0) return estados;
         } catch (error) {
-            console.error("Error al obtener estados:", error);
+            console.error("Error al obtener estados; no se inicializan meses:", error);
+            return [];
         }
 
         // Inicializa 12 meses si no existen
