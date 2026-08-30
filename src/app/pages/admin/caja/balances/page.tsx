@@ -9,9 +9,14 @@ const apiHost = process.env.NEXT_PUBLIC_API_HOST as string;
 interface Pago {
   id: number;
   monto: number;
-  fecha_pago: string; // puede venir 'YYYY-MM-DD' o 'YYYY-MM-DDTHH:mm:ss.sssZ'
+  // Cuándo se registró el cobro. La pone la base de datos y no se edita: es la
+  // que manda para el arqueo. Llega como 'YYYY-MM-DD HH:mm:ss'.
+  fecha_emision: string;
+  // La que el cajero escribe y sale impresa en el recibo. Sólo informativa.
+  fecha_pago: string;
   mes_aplicado: number;
   anio_aplicado: number;
+  cliente_nombre?: string;
 }
 
 interface Gasto {
@@ -45,12 +50,12 @@ const monthName = (m: number): string =>
 const parseDateLocal = (input: string): Date => {
   if (!input) return new Date(NaN);
   const s = String(input);
-  // Si trae tiempo/TZ (ISO), nos quedamos con la parte de la fecha
-  const onlyDate = s.includes("T") ? s.slice(0, 10) : s;
-  // Si es YYYY-MM-DD lo parseamos en local
-  if (/^\d{4}-\d{2}-\d{2}$/.test(onlyDate)) {
-    const [y, m, d] = onlyDate.split("-").map(Number);
-    return new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+  // Toma la fecha del inicio del texto, venga como sea: 'YYYY-MM-DD',
+  // 'YYYY-MM-DDTHH:mm:ss.sssZ' (ISO) o 'YYYY-MM-DD HH:mm:ss' (DATETIME de
+  // MySQL, que es como llega fecha_emision).
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 0, 0, 0, 0);
   }
   // Fallback (menos recomendado, pero mantiene compatibilidad)
   return new Date(s);
@@ -112,9 +117,11 @@ const BalanceMensual = () => {
         const data: Pago[] = await res.json();
         const ini = range.start;
         const fin = range.end;
+        // Se filtra por fecha_emision (cuándo entró el dinero), no por
+        // fecha_pago (lo que dice el recibo, que el cajero puede cambiar).
         const pagosFiltrados = data.filter((p) => {
-          const fechaPago = parseDateLocal(p.fecha_pago);
-          return fechaPago >= ini && fechaPago <= fin;
+          const registrado = parseDateLocal(p.fecha_emision ?? p.fecha_pago);
+          return registrado >= ini && registrado <= fin;
         });
         setIngresos(pagosFiltrados);
       } else {
@@ -237,30 +244,55 @@ const BalanceMensual = () => {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Registrado</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Fecha del recibo</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">Monto</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {loading ? (
-                  <tr><td colSpan={3} className="px-4 py-6 text-center text-slate-500">Cargando...</td></tr>
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-500">Cargando...</td></tr>
                 ) : ingresos.length === 0 ? (
-                  <tr><td colSpan={3} className="px-4 py-6 text-center text-slate-500">Sin pagos en el periodo</td></tr>
+                  <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-500">Sin pagos en el periodo</td></tr>
                 ) : (
                   ingresos
                     .slice()
-                    .sort((a, b) => parseDateLocal(a.fecha_pago).getTime() - parseDateLocal(b.fecha_pago).getTime())
-                    .map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 text-sm">{p.id}</td>
-                        <td className="px-4 py-3 text-sm">
-                          {formatDateHN(parseDateLocal(p.fecha_pago))}
-                        </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-green-700">
-                          {formatMoney(Number(p.monto) || 0)}
-                        </td>
-                      </tr>
-                    ))
+                    .sort(
+                      (a, b) =>
+                        parseDateLocal(a.fecha_emision ?? a.fecha_pago).getTime() -
+                        parseDateLocal(b.fecha_emision ?? b.fecha_pago).getTime()
+                    )
+                    .map((p) => {
+                      const registrado = parseDateLocal(p.fecha_emision ?? p.fecha_pago);
+                      const recibo = parseDateLocal(p.fecha_pago);
+                      // Si el recibo dice otro día que el del registro, se
+                      // resalta: es la señal de un cobro mandado a otro mes.
+                      const difiere =
+                        formatDateHN(registrado) !== formatDateHN(recibo);
+
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 text-sm">{p.id}</td>
+                          <td className="px-4 py-3 text-sm">{formatDateHN(registrado)}</td>
+                          <td
+                            className={`px-4 py-3 text-sm ${
+                              difiere ? "font-semibold text-amber-700" : "text-slate-500"
+                            }`}
+                            title={
+                              difiere
+                                ? "La fecha impresa en el recibo no coincide con el día en que se registró el cobro."
+                                : undefined
+                            }
+                          >
+                            {formatDateHN(recibo)}
+                            {difiere ? " ⚠" : ""}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-semibold text-green-700">
+                            {formatMoney(Number(p.monto) || 0)}
+                          </td>
+                        </tr>
+                      );
+                    })
                 )}
               </tbody>
             </table>
