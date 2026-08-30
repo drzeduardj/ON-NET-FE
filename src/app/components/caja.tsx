@@ -220,10 +220,36 @@ export default function RegistrarPago() {
 
   /** ✅ FIX: fecha por defecto en local, NO con toISOString directo */
   const [fechaPago, setFechaPago] = useState<string>(toLocalISODate());
-  const [montoTotal, setMontoTotal] = useState<number>(0);
+  // Los montos se guardan como texto para que la casilla pueda quedar VACÍA.
+  // Con un número, borrar el contenido daba Number("") = 0 y el campo se
+  // quedaba pegado en "0": el cajero tenía que seleccionarlo para escribir.
+  // `montoTotal` y `recibido` siguen siendo números para el resto del código,
+  // y los setters siguen recibiendo números, así que nada más cambia.
+  const [montoTotalTexto, setMontoTotalTexto] = useState<string>("");
+  const montoTotal = Number(montoTotalTexto || 0);
+  // Math.floor y no round: el monto sugerido sale del saldo pendiente, que
+  // puede traer centavos de pagos viejos. Redondear hacia arriba lo dejaría
+  // por encima del saldo y la validación bloquearía el cobro.
+  const setMontoTotal = (n: number) =>
+    setMontoTotalTexto(n > 0 ? String(Math.floor(n)) : "");
+
   const [referencia, setReferencia] = useState("");
   const [observacion, setObservacion] = useState("");
-  const [recibido, setRecibido] = useState<number>(0);
+
+  const [recibidoTexto, setRecibidoTexto] = useState<string>("");
+  const recibido = Number(recibidoTexto || 0);
+  const setRecibido = (n: number) =>
+    setRecibidoTexto(n > 0 ? String(Math.floor(n)) : "");
+
+  // El cobro se maneja en lempiras enteros: se descarta todo lo que no sea
+  // dígito y los ceros a la izquierda.
+  //
+  // El tope de 6 dígitos es una red de seguridad: si alguien teclea "650.50"
+  // por costumbre, el punto se descarta y quedaría 65050. No lo evita del
+  // todo, pero impide que un resbalón se convierta en un monto disparatado.
+  const MAX_DIGITOS = 6;
+  const soloEnteros = (valor: string) =>
+    valor.replace(/\D/g, "").replace(/^0+/, "").slice(0, MAX_DIGITOS);
   const [mesesSeleccionados, setMesesSeleccionados] = useState<MesSeleccionado[]>([]);
   const [modoMultiplesMeses, setModoMultiplesMeses] = useState(false);
 
@@ -1065,12 +1091,11 @@ export default function RegistrarPago() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{modoMultiplesMeses ? "Monto Total" : "Monto a pagar"}</label>
               <input
-                type="number"
-                step="0.01"
-                min={0}
-                max={!modoMultiplesMeses && saldoPendienteMesObjetivo > 0 ? saldoPendienteMesObjetivo : undefined}
-                value={montoTotal}
-                onChange={(e) => setMontoTotal(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={montoTotalTexto}
+                onChange={(e) => setMontoTotalTexto(soloEnteros(e.target.value))}
                 className="w-full px-3 py-2 border rounded-md"
               />
               {modoMultiplesMeses && mesesSeleccionadosCount > 0 && (
@@ -1078,6 +1103,7 @@ export default function RegistrarPago() {
                   {mesesSeleccionadosCount} mes(es) × L.{fmt(montoPorMes)} = L.{fmt(montoTotal)}
                 </p>
               )}
+              <p className="mt-1 text-xs text-slate-500">Sólo lempiras enteros, sin centavos.</p>
               {!modoMultiplesMeses && <p className="mt-1 text-xs text-slate-500">Sugerido por plan: L.{fmt(plan?.precio_mensual)}</p>}
               {!modoMultiplesMeses && !!mesMasAntiguoPendiente && (
                 <p className="mt-1 text-xs text-amber-700">
@@ -1089,11 +1115,11 @@ export default function RegistrarPago() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Recibido</label>
               <input
-                type="number"
-                step="0.01"
-                min={0}
-                value={recibido}
-                onChange={(e) => setRecibido(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={recibidoTexto}
+                onChange={(e) => setRecibidoTexto(soloEnteros(e.target.value))}
                 className="w-full px-3 py-2 border rounded-md"
               />
               <p className={`mt-1 text-sm ${cambio < 0 ? "text-red-600" : "text-slate-700"}`}>
