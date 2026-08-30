@@ -1090,20 +1090,27 @@ export default function RegistrarPago() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{modoMultiplesMeses ? "Monto Total" : "Monto a pagar"}</label>
+              {/* Sólo lectura: lo calcula el sistema (el saldo del mes, o el
+                  plan por la cantidad de meses seleccionados). Si el cliente
+                  abona menos, eso se captura en "Recibido" y queda como pago
+                  parcial: el monto a pagar no se toca. */}
               <input
                 type="text"
-                inputMode="numeric"
-                placeholder="0"
-                value={montoTotalTexto}
-                onChange={(e) => setMontoTotalTexto(soloEnteros(e.target.value))}
-                className="w-full px-3 py-2 border rounded-md"
+                readOnly
+                aria-readonly="true"
+                tabIndex={-1}
+                value={montoTotal > 0 ? `L. ${fmt(montoTotal)}` : "—"}
+                className="w-full px-3 py-2 border rounded-md bg-slate-100 text-slate-700 font-semibold cursor-not-allowed"
               />
               {modoMultiplesMeses && mesesSeleccionadosCount > 0 && (
                 <p className="mt-1 text-xs text-slate-500">
                   {mesesSeleccionadosCount} mes(es) × L.{fmt(montoPorMes)} = L.{fmt(montoTotal)}
                 </p>
               )}
-              <p className="mt-1 text-xs text-slate-500">Sólo lempiras enteros, sin centavos.</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Lo calcula el sistema. Si el cliente abona menos, anotalo en
+                &quot;Recibido&quot; y queda como pago parcial.
+              </p>
               {!modoMultiplesMeses && <p className="mt-1 text-xs text-slate-500">Sugerido por plan: L.{fmt(plan?.precio_mensual)}</p>}
               {!modoMultiplesMeses && !!mesMasAntiguoPendiente && (
                 <p className="mt-1 text-xs text-amber-700">
@@ -1122,6 +1129,7 @@ export default function RegistrarPago() {
                 onChange={(e) => setRecibidoTexto(soloEnteros(e.target.value))}
                 className="w-full px-3 py-2 border rounded-md"
               />
+              <p className="mt-1 text-xs text-slate-500">Sólo lempiras enteros, sin centavos.</p>
               <p className={`mt-1 text-sm ${cambio < 0 ? "text-red-600" : "text-slate-700"}`}>
                 {cambio < 0 ? "Falta" : "Cambio"}: <span className="font-semibold">L.{fmt(Math.abs(cambio))}</span>
               </p>
