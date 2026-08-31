@@ -1043,7 +1043,7 @@ export default function RegistrarPago() {
           {["Factura original", "Copia"].map((etiqueta, idx) => (
             <div className="pdf-wrap pdf-page" key={idx}>
               <div className="pdf-banner">
-                <img src="/img/ON-NET-BANNER.png" alt="ON-NET" crossOrigin="anonymous" />
+                <img src="/img/ON-NET-BANNER.jpeg" alt="ON-NET" crossOrigin="anonymous" />
               </div>
 
               <div className="pdf-header">

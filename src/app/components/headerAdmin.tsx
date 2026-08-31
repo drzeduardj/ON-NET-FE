@@ -20,7 +20,7 @@ export default function HeaderAdmin({
 
       <div className="flex items-center">
         <img
-          src="/img/ON-NET-BANNER.png"
+          src="/img/ON-NET-BANNER.jpeg"
           alt="ON-Net Wireless Banner"
           className="h-10 w-auto object-contain sm:h-12"
         />

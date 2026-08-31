@@ -7,7 +7,7 @@ const HeaderCajero = () => {
     <header className="w-full bg-[#00AEEF] py-2 shadow-md">
       <div className="flex justify-between items-center px-4">
         <img
-          src="/img/ON-NET-BANNER.png"
+          src="/img/ON-NET-BANNER.jpeg"
           alt="ON-Net Wireless Banner"
           className="h-20 w-auto object-contain"
         />

@@ -322,7 +322,7 @@ const Cotizacion = () => {
 
           <div class="footer" style="padding-bottom: 20px;">
             <img 
-              src="${window.location.origin}/img/ON-NET-BANNER.png"
+              src="${window.location.origin}/img/ON-NET-BANNER.jpeg"
               alt="ON-NET Banner"
               style="
                 display: block;
@@ -490,7 +490,7 @@ const Cotizacion = () => {
 
           <div class="footer" style="padding-bottom: 20px;">
             <img 
-              src="${window.location.origin}/img/ON-NET-BANNER.png"
+              src="${window.location.origin}/img/ON-NET-BANNER.jpeg"
               alt="ON-NET Banner"
               style="
                 display: block;
