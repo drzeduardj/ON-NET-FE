@@ -111,7 +111,7 @@ const UtilidadesPage = () => {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-orange-600">Utilidad y márgenes</h1>
           <p className="text-sm text-slate-600 mt-1">

@@ -278,7 +278,7 @@ const DetallePlanilla = () => {
   if (!planilla) {
     return (
       <AdminLayout>
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <MensajeError mensaje={error || "No se encontró la planilla"} />
           <Link href="/pages/admin/planillas" className={claseBotonSecundario}>
             <ArrowLeft className="size-4" /> Volver
@@ -292,7 +292,7 @@ const DetallePlanilla = () => {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Link href="/pages/admin/planillas" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-orange-600 mb-3">
           <ArrowLeft className="size-4" /> Planillas
         </Link>
