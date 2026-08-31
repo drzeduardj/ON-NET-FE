@@ -235,7 +235,12 @@ const Cotizacion = () => {
           <meta charset="utf-8">
           <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; position: relative; padding-top: 30px; }
+            .header { margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header-table { width: 100%; border-collapse: collapse; margin: 0; }
+            .header-table td { vertical-align: middle; padding: 0; border: none; }
+            .header-logo { width: 150px; }
+            .header-logo img { width: 150px; display: block; }
+            .header-info { text-align: center; padding: 0 10px; }
             .company-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
             .service-type { font-size: 20px; color: #2563eb; margin-bottom: 10px; }
             .date { font-size: 16px; margin-bottom: 10px; }
@@ -250,14 +255,21 @@ const Cotizacion = () => {
         </head>
         <body>
           <div class="header">
-            <img src="${window.location.origin}/img/conectaprobg.png"
-              alt="ConectaPro"
-              style="width: 180px; position: absolute; top: 20px; left: 20px;">
-            <div style="margin-top: 40px;">
-              <div class="company-name">ON NET WIRELESS Y SERVICIOS</div>
-              <div class="service-type">Cotización de servicios</div>
-              <div class="date">Fecha: ${cotizacionData.fecha}</div>
-            </div>
+            <table class="header-table">
+              <tbody>
+                <tr>
+                  <td class="header-logo">
+                    <img src="${window.location.origin}/img/conectaprobg.png" alt="ConectaPro">
+                  </td>
+                  <td class="header-info">
+                    <div class="company-name">ON NET WIRELESS Y SERVICIOS</div>
+                    <div class="service-type">Cotización de servicios</div>
+                    <div class="date">Fecha: ${cotizacionData.fecha}</div>
+                  </td>
+                  <td class="header-logo"></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <div class="section">
@@ -420,7 +432,12 @@ const Cotizacion = () => {
           <meta charset="utf-8">
           <style>
             body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; position: relative; padding-top: 30px; }
+            .header { margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .header-table { width: 100%; border-collapse: collapse; margin: 0; }
+            .header-table td { vertical-align: middle; padding: 0; border: none; }
+            .header-logo { width: 150px; }
+            .header-logo img { width: 150px; display: block; }
+            .header-info { text-align: center; padding: 0 10px; }
             .company-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
             .service-type { font-size: 20px; color: #2563eb; margin-bottom: 10px; }
             .date { font-size: 16px; margin-bottom: 10px; }
@@ -435,14 +452,21 @@ const Cotizacion = () => {
         </head>
         <body>
           <div class="header">
-            <img src="${window.location.origin}/img/conectaprobg.png"
-              alt="ConectaPro"
-              style="width: 180px; position: absolute; top: 20px; left: 20px;">
-            <div style="margin-top: 40px;">
-              <div class="company-name">ON NET WIRELESS Y SERVICIOS</div>
-              <div class="service-type">Cotización de servicios</div>
-              <div class="date">Fecha: ${cotizacionData.fecha}</div>
-            </div>
+            <table class="header-table">
+              <tbody>
+                <tr>
+                  <td class="header-logo">
+                    <img src="${window.location.origin}/img/conectaprobg.png" alt="ConectaPro">
+                  </td>
+                  <td class="header-info">
+                    <div class="company-name">ON NET WIRELESS Y SERVICIOS</div>
+                    <div class="service-type">Cotización de servicios</div>
+                    <div class="date">Fecha: ${cotizacionData.fecha}</div>
+                  </td>
+                  <td class="header-logo"></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <div class="section">

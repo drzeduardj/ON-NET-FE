@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { obtenerMisModulos, type Modulo } from "@/app/lib/planillasApi";
 
 export default function SidebarAdmin({
   open,
@@ -14,6 +16,28 @@ export default function SidebarAdmin({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+
+  // Módulos restringidos. No se listan a mano: se preguntan al backend, que
+  // los saca de cargo_modulo. Así el menú y el permiso real nunca se separan,
+  // y dar acceso a otro cargo mañana es un INSERT y no un despliegue.
+  //
+  // Si la petición falla (sesión vencida, cargo sin módulos), la lista queda
+  // vacía y la sección simplemente no se pinta.
+  const [modulos, setModulos] = useState<Modulo[]>([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    obtenerMisModulos()
+      .then((lista) => {
+        if (!cancelado) setModulos(lista);
+      })
+      .catch(() => {
+        if (!cancelado) setModulos([]);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const Item = ({ href, label, exact = false }: { href: string; label: string; exact?: boolean }) => {
     // Comparación exacta o por startsWith según sea necesario
@@ -105,6 +129,25 @@ export default function SidebarAdmin({
               <Item href="/pages/admin/iptv/balancestv" label="Balances IPTV" />
             </ul>
           </div>
+
+          {modulos.length > 0 && (
+            <>
+              <hr className="border-orange-300/60" />
+
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-wide text-orange-500/80 font-medium">
+                  Operaciones de campo
+                </p>
+                <ul className="space-y-1">
+                  {modulos
+                    .filter((m) => m.ruta)
+                    .map((m) => (
+                      <Item key={m.id} href={m.ruta as string} label={m.nombre} />
+                    ))}
+                </ul>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </aside>
