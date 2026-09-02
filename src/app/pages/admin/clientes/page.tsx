@@ -7,10 +7,12 @@ import ClienteModal from "./components/clienteModal";
 import Pagination from "@/app/components/pagination";
 import SearchDropdown from "@/app/components/searchBar";
 import Swal from "sweetalert2";
+import PagosMesModal from "@/app/components/pagosMesModal";
 import {
   getEstadoColor,
   etiquetaEstado,
   abreviaturaEstado,
+  tienePagoConsultable,
   LEYENDA_ESTADOS,
 } from "@/app/lib/estadoMensual";
 
@@ -144,6 +146,13 @@ const GestionClientes = () => {
   const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
   const [planes, setPlanes] = useState<PlanMap>({});
   const [modalCliente, setModalCliente] = useState<Cliente | null>(null);
+  // Mes cuyo detalle de pagos se está viendo (null = modal cerrado).
+  const [mesConsultado, setMesConsultado] = useState<{
+    clienteId: number;
+    clienteNombre: string;
+    mes: number;
+    anio: number;
+  } | null>(null);
   const [aniosCliente, setAniosCliente] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -844,17 +853,37 @@ const GestionClientes = () => {
                               );
                               const color = getEstadoColor(estado?.estado);
 
+                              const consultable = tienePagoConsultable(estado?.estado);
+
                               return (
-                                <div
+                                <button
                                   key={index}
-                                  className={`p-2 rounded text-center ${color}`}
-                                  title={etiquetaEstado(estado?.estado)}
+                                  type="button"
+                                  disabled={!consultable}
+                                  onClick={() =>
+                                    setMesConsultado({
+                                      clienteId: cliente.id,
+                                      clienteNombre: cliente.nombre,
+                                      mes: index + 1,
+                                      anio,
+                                    })
+                                  }
+                                  className={`p-2 rounded text-center ${color} ${
+                                    consultable
+                                      ? "cursor-pointer hover:ring-2 hover:ring-orange-400"
+                                      : "cursor-default"
+                                  }`}
+                                  title={
+                                    consultable
+                                      ? `${etiquetaEstado(estado?.estado)} · ver pagos`
+                                      : etiquetaEstado(estado?.estado)
+                                  }
                                 >
                                   <div className="text-xs font-semibold">{mes}</div>
                                   <div className="text-[10px] mt-1">
                                     {abreviaturaEstado(estado?.estado)}
                                   </div>
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
@@ -996,14 +1025,34 @@ const GestionClientes = () => {
                                       );
                                       const color = getEstadoColor(estado?.estado);
 
+                                      const consultable = tienePagoConsultable(
+                                        estado?.estado
+                                      );
+
                                       return (
-                                        <div
+                                        <button
                                           key={index}
-                                          className={`p-1 rounded text-center text-xs ${color}`}
-                                          title={`${mesLargo[index]}: ${etiquetaEstado(estado?.estado)}`}
+                                          type="button"
+                                          disabled={!consultable}
+                                          onClick={() =>
+                                            setMesConsultado({
+                                              clienteId: cliente.id,
+                                              clienteNombre: cliente.nombre,
+                                              mes: index + 1,
+                                              anio,
+                                            })
+                                          }
+                                          className={`w-full p-1 rounded text-center text-xs ${color} ${
+                                            consultable
+                                              ? "cursor-pointer hover:ring-2 hover:ring-orange-400"
+                                              : "cursor-default"
+                                          }`}
+                                          title={`${mesLargo[index]}: ${etiquetaEstado(estado?.estado)}${
+                                            consultable ? " · ver pagos" : ""
+                                          }`}
                                         >
                                           {mes}
-                                        </div>
+                                        </button>
                                       );
                                     }
                                   )}
@@ -1059,6 +1108,16 @@ const GestionClientes = () => {
             fetchClientes();
           }}
           apiHost={apiHost}
+        />
+      )}
+
+      {mesConsultado && (
+        <PagosMesModal
+          clienteId={mesConsultado.clienteId}
+          clienteNombre={mesConsultado.clienteNombre}
+          mes={mesConsultado.mes}
+          anio={mesConsultado.anio}
+          onClose={() => setMesConsultado(null)}
         />
       )}
     </AdminLayout>

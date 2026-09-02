@@ -29,6 +29,16 @@ export const ESTADOS_SIN_DEUDA: readonly string[] = [
 export const esMesConDeuda = (estado?: string | null): boolean =>
   !ESTADOS_SIN_DEUDA.includes(estado ?? "");
 
+/**
+ * true si ese mes tiene (o debería tener) un cobro detrás, y por lo tanto la
+ * casilla del calendario se puede abrir para ver el detalle del pago.
+ *
+ * 'Pendiente', 'Suspendido' y 'Sin servicio' no llevan pago asociado: hacerlos
+ * clicables abriría un modal vacío.
+ */
+export const tienePagoConsultable = (estado?: string | null): boolean =>
+  estado === ESTADO_PAGADO || estado === ESTADO_PARCIAL;
+
 /** Clases de Tailwind (fondo + texto) para la casilla del mes. */
 export const getEstadoColor = (estado?: string | null): string => {
   switch (estado) {

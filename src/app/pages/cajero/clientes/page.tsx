@@ -4,10 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import SearchDropdown from "@/app/components/searchBar";
 import CajeroLayout from "@/app/components/cajeroLayout";
+import PagosMesModal from "@/app/components/pagosMesModal";
 import {
     esMesConDeuda,
     getEstadoColor,
     etiquetaEstado,
+    tienePagoConsultable,
 } from "@/app/lib/estadoMensual";
 
 const apiHost = process.env.NEXT_PUBLIC_API_HOST as string;
@@ -164,6 +166,8 @@ const GestionClientes = () => {
     const [clientesIndex, setClientesIndex] = useState<ClienteIndex[]>([]);
     const [planes, setPlanes] = useState<PlanMap>({});
     const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+    // Mes cuyo detalle de pagos se está viendo (null = modal cerrado).
+    const [mesConsultado, setMesConsultado] = useState<number | null>(null);
 
     const [anioVista, setAnioVista] = useState(anioActual);
 
@@ -646,19 +650,32 @@ const GestionClientes = () => {
                                             const estado = clienteSeleccionado.estados?.find(
                                                 (e) => e.mes === index + 1 && e.anio === anioVista
                                             );
+                                            const consultable = tienePagoConsultable(estado?.estado);
+
                                             return (
-                                                <div
+                                                <button
                                                     key={index}
+                                                    type="button"
+                                                    disabled={!consultable}
+                                                    onClick={() => setMesConsultado(index + 1)}
                                                     className={`p-3 rounded-lg text-center ${getEstadoColor(
                                                         estado?.estado
-                                                    )}`}
-                                                    title={etiquetaEstado(estado?.estado)}
+                                                    )} ${
+                                                        consultable
+                                                            ? "cursor-pointer hover:ring-2 hover:ring-orange-400"
+                                                            : "cursor-default"
+                                                    }`}
+                                                    title={
+                                                        consultable
+                                                            ? `${etiquetaEstado(estado?.estado)} · ver pagos`
+                                                            : etiquetaEstado(estado?.estado)
+                                                    }
                                                 >
                                                     <div className="text-xs font-semibold">{mes}</div>
                                                     <div className="text-[11px] mt-1">
                                                         {etiquetaEstado(estado?.estado)}
                                                     </div>
-                                                </div>
+                                                </button>
                                             );
                                         })}
                                     </div>
@@ -672,6 +689,16 @@ const GestionClientes = () => {
                     )}
                 </div>
             </div>
+
+            {mesConsultado !== null && clienteSeleccionado && (
+                <PagosMesModal
+                    clienteId={clienteSeleccionado.id}
+                    clienteNombre={clienteSeleccionado.nombre}
+                    mes={mesConsultado}
+                    anio={anioVista}
+                    onClose={() => setMesConsultado(null)}
+                />
+            )}
         </CajeroLayout>
     );
 };

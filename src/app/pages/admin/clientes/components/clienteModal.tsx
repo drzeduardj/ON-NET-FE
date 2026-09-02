@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { getEstadoTextColor } from "@/app/lib/estadoMensual";
+import PagosMesModal from "@/app/components/pagosMesModal";
+import { getEstadoTextColor, tienePagoConsultable } from "@/app/lib/estadoMensual";
 
 interface Estado {
   mes: number;
@@ -97,6 +98,11 @@ const ClienteModal = ({ cliente, onClose, onClienteUpdated, apiHost }: ClienteMo
   const [mensaje, setMensaje] = useState("");
   const [planes, setPlanes] = useState<{ id: number; nombre: string }[]>([]);
   const [guardando, setGuardando] = useState(false);
+  // Mes cuyo detalle de pagos se está viendo (null = modal cerrado).
+  const [mesConsultado, setMesConsultado] = useState<{
+    mes: number;
+    anio: number;
+  } | null>(null);
 
   // Si cambia el cliente (por ejemplo abrir otro), refrescar form
   useEffect(() => {
@@ -243,6 +249,7 @@ const ClienteModal = ({ cliente, onClose, onClienteUpdated, apiHost }: ClienteMo
   };
 
   return (
+    <>
     <div
       ref={overlayRef}
       onClick={onOverlayClick}
@@ -466,19 +473,32 @@ const ClienteModal = ({ cliente, onClose, onClienteUpdated, apiHost }: ClienteMo
             <h3 className="font-semibold text-sm text-slate-700 mb-2">Estados de Pago</h3>
             {cliente.estados?.length ? (
               <ul className="text-sm grid grid-cols-1 sm:grid-cols-2 gap-1">
-                {cliente.estados.map((e, i) => (
-                  <li
-                    key={`${e.anio}-${e.mes}-${i}`}
-                    className="flex items-center justify-between border rounded-md px-3 py-2"
-                  >
-                    <span className="text-slate-600">
-                      {MESES[e.mes - 1]} / {e.anio}
-                    </span>
-                    <span className={getEstadoTextColor(e.estado)}>
-                      {e.estado}
-                    </span>
-                  </li>
-                ))}
+                {cliente.estados.map((e, i) => {
+                  const consultable = tienePagoConsultable(e.estado);
+
+                  return (
+                    <li key={`${e.anio}-${e.mes}-${i}`}>
+                      <button
+                        type="button"
+                        disabled={!consultable}
+                        onClick={() => setMesConsultado({ mes: e.mes, anio: e.anio })}
+                        className={`w-full flex items-center justify-between border rounded-md px-3 py-2 text-left ${
+                          consultable
+                            ? "cursor-pointer hover:bg-slate-50 hover:border-orange-300"
+                            : "cursor-default"
+                        }`}
+                        title={consultable ? "Ver pagos de este mes" : undefined}
+                      >
+                        <span className="text-slate-600">
+                          {MESES[e.mes - 1]} / {e.anio}
+                        </span>
+                        <span className={getEstadoTextColor(e.estado)}>
+                          {e.estado}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="text-gray-500 italic text-sm">Sin historial</p>
@@ -547,6 +567,17 @@ const ClienteModal = ({ cliente, onClose, onClienteUpdated, apiHost }: ClienteMo
         </div>
       </div>
     </div>
+
+    {mesConsultado && (
+      <PagosMesModal
+        clienteId={cliente.id}
+        clienteNombre={cliente.nombre}
+        mes={mesConsultado.mes}
+        anio={mesConsultado.anio}
+        onClose={() => setMesConsultado(null)}
+      />
+    )}
+    </>
   );
 };
 
