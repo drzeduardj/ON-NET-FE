@@ -332,6 +332,7 @@ const Cotizacion = () => {
             </table>
           </div>
 
+          
           <div class="footer" style="padding-bottom: 20px;">
             <img 
               src="${window.location.origin}/img/ON-NET-BANNER.jpeg"
