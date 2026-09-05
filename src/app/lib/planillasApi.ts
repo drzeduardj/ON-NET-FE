@@ -480,6 +480,61 @@ export const obtenerLiquidacion = (id: number) =>
   pedir<Liquidacion[]>(`/api/planillas/${id}/liquidacion`);
 
 /* ============================
+   Cuadrícula (pantalla simplificada)
+   ============================ */
+
+export interface PagoCuadricula {
+  planilla_dia_id: number;
+  colaborador_id: number;
+  asistio: number;
+  monto: number;
+  bono: number;
+  observacion: string | null;
+}
+
+/** Un gasto tal como lo devuelve la cuadrícula: con el nombre de su categoría. */
+export interface GastoCuadricula extends GastoPlanilla {
+  categoria: string;
+}
+
+export interface DiaCuadricula extends DiaPlanilla {
+  pagos: PagoCuadricula[];
+  /** Detalle de gastos del día. `gastos` (heredado) es el total numérico. */
+  gastosDetalle: GastoCuadricula[];
+}
+
+export interface Cuadricula {
+  planilla: {
+    id: number;
+    cuadrilla_id: number;
+    nombre: string;
+    fecha_inicio: string;
+    fecha_fin: string;
+    estado: EstadoPlanilla;
+    observaciones: string | null;
+  };
+  resumen: PlanillaResumen | null;
+  colaboradores: IntegrantePlanilla[];
+  dias: DiaCuadricula[];
+  gastosGenerales: GastoCuadricula[];
+}
+
+/** La planilla entera en una sola petición: días, pagos y gastos. */
+export const obtenerCuadricula = (id: number) =>
+  pedir<Cuadricula>(`/api/planillas/${id}/cuadricula`);
+
+/**
+ * Guarda de golpe las filas que se tocaron, en una sola transacción.
+ * Devuelve la cuadrícula recargada: los totales que se muestran después de
+ * guardar son los que calculó la base, no los que estimó el navegador.
+ */
+export const guardarCuadricula = (id: number, dias: Record<string, unknown>[]) =>
+  pedir<{ creados: number; actualizados: number; cuadricula: Cuadricula }>(
+    `/api/planillas/${id}/cuadricula`,
+    { method: "PUT", body: JSON.stringify({ dias }) }
+  );
+
+/* ============================
    Días
    ============================ */
 

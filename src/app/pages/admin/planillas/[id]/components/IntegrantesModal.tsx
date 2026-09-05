@@ -6,8 +6,7 @@ import {
   obtenerColaboradores,
   num,
   type Colaborador,
-  type IntegrantePlanilla,
-  type Planilla
+  type IntegrantePlanilla
 } from "@/app/lib/planillasApi";
 import {
   Modal,
@@ -24,9 +23,18 @@ interface Fila {
   tarifa_diaria: string;
 }
 
+/**
+ * Sólo se necesita el id y los integrantes actuales, no la planilla entera.
+ * Tipado así, el modal sirve igual a la pantalla detallada y a la rápida.
+ */
+interface PlanillaMinima {
+  id: number;
+  colaboradores: IntegrantePlanilla[];
+}
+
 interface Props {
   abierto: boolean;
-  planilla: Planilla;
+  planilla: PlanillaMinima;
   onCerrar: () => void;
   onGuardado: () => void;
 }
